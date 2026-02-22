@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>RegSHO Monitor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
+
+    :root {
+      --bg: #F8F9FA;
+      --white: #FFFFFF;
+      --surface: #F2F4F6;
+      --text-primary: #191F28;
+      --text-secondary: #6B7684;
+      --text-tertiary: #ADB5BD;
+      --border: #E5E8EB;
+      --danger: #FF3B30;
+      --danger-bg: #FFF0EE;
+      --danger-light: #FFEBE8;
+      --warning: #FF9500;
+      --warning-bg: #FFF8EC;
+      --safe: #34C759;
+      --safe-bg: #EDFAF1;
+      --blue: #3182F6;
+      --blue-bg: #EBF3FE;
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, .06), 0 1px 2px rgba(0, 0, 0, .04);
+      --shadow-md: 0 4px 16px rgba(0, 0, 0, .08);
+      --shadow-lg: 0 8px 32px rgba(0, 0, 0, .12);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+    }
+
+    body {
+      font-family: 'Pretendard', sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+      font-size: 14px;
+      line-height: 1.5
+    }
+
+    /* ── NAV ── */
+    nav {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      height: 60px;
+      gap: 16px
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 17px;
+      color: var(--text-primary)
+    }
+
+    .nav-logo-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #FF3B30, #FF9500);
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px
+    }
+
+    .nav-sub {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--text-secondary);
+      margin-top: 1px
+    }
+
+    .nav-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 100px;
+      background: var(--surface);
+      font-size: 12px;
+      color: var(--text-secondary)
+    }
+
+    .live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--safe);
+      animation: pulse 2s infinite
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1)
+      }
+
+      50% {
+        opacity: .5;
+        transform: scale(.8)
+      }
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all .15s
+    }
+
+    .btn-ghost {
+      background: var(--surface);
+      color: var(--text-primary)
+    }
+
+    .btn-ghost:hover {
+      background: var(--border)
+    }
+
+    .btn-primary {
+      background: var(--blue);
+      color: #fff
+    }
+
+    .btn-primary:hover {
+      background: #1B6DEE
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px
+    }
+
+    /* ── LAYOUT ── */
+    main {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 28px 24px
+    }
+
+    /* ── CHANGE BANNER ── */
+    .change-strip {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 24px
+    }
+
+    .change-card {
+      background: var(--white);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border)
+    }
+
+    .change-card.new-card {
+      border-color: #B7E4C7;
+      background: var(--safe-bg)
+    }
+
+    .change-card.del-card {
+      background: var(--white)
+    }
+
+    .change-icon {
+      font-size: 22px;
+      margin-top: 1px
+    }
+
+    .change-title {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text-primary)
+    }
+
+    .change-title small {
+      font-weight: 400;
+      color: var(--text-secondary);
+      margin-left: 6px
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px
+    }
+
+    .chip {
+      padding: 4px 10px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: .15s
+    }
+
+    .chip-new {
+      background: rgba(52, 199, 89, .15);
+      color: #1A8A38
+    }
+
+    .chip-del {
+      background: var(--surface);
+      color: var(--text-secondary)
+    }
+
+    /* ── SUMMARY CARDS ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px
+    }
+
+    .kpi-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+      transition: .2s
+    }
+
+    .kpi-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px)
+    }
+
+    .kpi-num {
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1
+    }
+
+    .kpi-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 6px;
+      font-weight: 500
+    }
+
+    .kpi-card.kd .kpi-num {
+      color: var(--danger)
+    }
+
+    .kpi-card.kd {
+      border-top: 3px solid var(--danger)
+    }
+
+    .kpi-card.kw .kpi-num {
+      color: var(--warning)
+    }
+
+    .kpi-card.kw {
+      border-top: 3px solid var(--warning)
+    }
+
+    .kpi-card.ks .kpi-num {
+      color: var(--safe)
+    }
+
+    .kpi-card.ks {
+      border-top: 3px solid var(--safe)
+    }
+
+    .kpi-card.kb .kpi-num {
+      color: var(--blue)
+    }
+
+    /* ── TOOLBAR ── */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 14px;
+      flex: 1;
+      min-width: 180px;
+      max-width: 260px;
+      transition: .2s
+    }
+
+    .search-box:focus-within {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(49, 130, 246, .1)
+    }
+
+    .search-box input {
+      border: none;
+      outline: none;
+      font-family: inherit;
+      font-size: 13px;
+      background: transparent;
+      width: 100%;
+      color: var(--text-primary)
+    }
+
+    .search-box input::placeholder {
+      color: var(--text-tertiary)
+    }
+
+    .filter-tabs {
+      display: flex;
+      gap: 4px
+    }
+
+    .ftab {
+      padding: 7px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--white);
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: .15s
+    }
+
+    .ftab:hover {
+      border-color: var(--text-secondary)
+    }
+
+    .ftab.fa {
+      background: var(--text-primary);
+      color: #fff;
+      border-color: var(--text-primary)
+    }
+
+    .ftab.fd {
+      background: var(--danger-bg);
+      color: var(--danger);
+      border-color: #FFCCC7
+    }
+
+    .ftab.fw {
+      background: var(--warning-bg);
+      color: var(--warning);
+      border-color: #FFD8A8
+    }
+
+    .ftab.fs {
+      background: var(--safe-bg);
+      color: var(--safe);
+      border-color: #B7E4C7
+    }
+
+    .ftab.fb {
+      background: var(--blue-bg);
+      color: var(--blue);
+      border-color: #C2DCF9
+    }
+
+    #result-info {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--text-secondary)
+    }
+
+    /* ── TABLE ── */
+    .table-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+      overflow: hidden
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse
+    }
+
+    thead th {
+      padding: 12px 16px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      color: var(--text-tertiary);
+      text-align: left;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none
+    }
+
+    thead th:hover {
+      color: var(--text-secondary)
+    }
+
+    thead th .si {
+      font-size: 10px;
+      margin-left: 3px;
+      opacity: .3
+    }
+
+    thead th.sa .si::after {
+      content: '▲';
+      opacity: 1
+    }
+
+    thead th.sd .si::after {
+      content: '▼';
+      opacity: 1
+    }
+
+    thead th:not(.sa):not(.sd) .si::after {
+      content: '↕'
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: .12s
+    }
+
+    tbody tr:last-child {
+      border-bottom: none
+    }
+
+    tbody tr:hover {
+      background: #FAFBFC
+    }
+
+    tbody tr.is-new {
+      animation: rowFade 2.5s ease
+    }
+
+    @keyframes rowFade {
+
+      0%,
+      100% {
+        background: transparent
+      }
+
+      30% {
+        background: rgba(52, 199, 89, .06)
+      }
+    }
+
+    td {
+      padding: 14px 16px;
+      vertical-align: middle
+    }
+
+    /* ── CELL STYLES ── */
+    .sym-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .star-btn {
+      background: none;
+      border: none;
+      font-size: 15px;
+      cursor: pointer;
+      opacity: .25;
+      transition: .15s;
+      padding: 0 2px
+    }
+
+    .star-btn.on {
+      opacity: 1
+    }
+
+    .star-btn:hover {
+      opacity: .7;
+      transform: scale(1.15)
+    }
+
+    .sym {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+      font-variant-numeric: tabular-nums
+    }
+
+    .new-tag {
+      font-size: 9px;
+      font-weight: 700;
+      background: var(--safe);
+      color: #fff;
+      padding: 2px 6px;
+      border-radius: 4px;
+      letter-spacing: .4px
+    }
+
+    .r3210-tag {
+      font-size: 9px;
+      font-weight: 700;
+      background: var(--warning);
+      color: #fff;
+      padding: 2px 6px;
+      border-radius: 4px
+    }
+
+    .name-txt {
+      font-size: 12px;
+      color: var(--text-secondary);
+      max-width: 200px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis
+    }
+
+    .mkt-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--text-secondary);
+      white-space: nowrap
+    }
+
+    /* streak cell */
+    .streak-val {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1;
+      font-variant-numeric: tabular-nums
+    }
+
+    .row-danger .streak-val {
+      color: var(--danger)
+    }
+
+    .row-warning .streak-val {
+      color: var(--warning)
+    }
+
+    .row-safe .streak-val {
+      color: var(--safe)
+    }
+
+    .streak-sub {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      margin-top: 2px
+    }
+
+    .prog-track {
+      height: 5px;
+      background: var(--surface);
+      border-radius: 3px;
+      margin: 5px 0;
+      overflow: hidden;
+      width: 120px
+    }
+
+    .prog-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width .8s cubic-bezier(.4, 0, .2, 1)
+    }
+
+    .row-danger .prog-fill {
+      background: linear-gradient(90deg, #FF9500, #FF3B30)
+    }
+
+    .row-warning .prog-fill {
+      background: linear-gradient(90deg, #34C759, #FF9500)
+    }
+
+    .row-safe .prog-fill {
+      background: var(--safe)
+    }
+
+    .remain-lbl {
+      font-size: 11px;
+      font-weight: 600;
+      margin-top: 1px
+    }
+
+    .row-danger .remain-lbl {
+      color: var(--danger)
+    }
+
+    .row-warning .remain-lbl {
+      color: var(--warning)
+    }
+
+    .row-safe .remain-lbl {
+      color: var(--text-tertiary)
+    }
+
+    /* risk badge */
+    .risk-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 12px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap
+    }
+
+    .rb-danger {
+      background: var(--danger-bg);
+      color: var(--danger)
+    }
+
+    .rb-warning {
+      background: var(--warning-bg);
+      color: var(--warning)
+    }
+
+    .rb-safe {
+      background: var(--safe-bg);
+      color: var(--safe)
+    }
+
+    /* sparkline */
+    .spark {
+      display: flex;
+      gap: 3px;
+      align-items: flex-end;
+      height: 22px
+    }
+
+    .sp {
+      width: 6px;
+      border-radius: 2px;
+      transition: .15s
+    }
+
+    .sp-in {
+      height: 18px;
+      background: var(--blue);
+      opacity: .7
+    }
+
+    .sp-out {
+      height: 5px;
+      background: var(--border)
+    }
+
+    .date-txt {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-variant-numeric: tabular-nums
+    }
+
+    /* ── LOADING / EMPTY ── */
+    #loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+      padding: 80px 0
+    }
+
+    .spin {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin .7s linear infinite
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    #loading p {
+      color: var(--text-secondary);
+      font-size: 14px;
+      text-align: center
+    }
+
+    #empty-state {
+      display: none;
+      text-align: center;
+      padding: 60px;
+      color: var(--text-tertiary)
+    }
+
+    /* ── WATCHLIST PANEL ── */
+    #wl-panel {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      margin-bottom: 16px;
+      display: none
+    }
+
+    .wl-hd {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      margin-bottom: 8px
+    }
+
+    /* ── MODAL ── */
+    .modal-bg {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .35);
+      z-index: 500;
+      display: none;
+      align-items: center;
+      justify-content: center
+    }
+
+    .modal-bg.open {
+      display: flex
+    }
+
+    .modal {
+      background: var(--white);
+      border-radius: 24px;
+      padding: 28px;
+      width: 480px;
+      max-width: 94vw;
+      box-shadow: var(--shadow-lg);
+      animation: slideUp .25s ease
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(20px);
+        opacity: 0
+      }
+
+      to {
+        transform: none;
+        opacity: 1
+      }
+    }
+
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 700
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 22px;
+      cursor: pointer;
+      color: var(--text-tertiary);
+      line-height: 1
+    }
+
+    .history-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px
+    }
+
+    .hday {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 600;
+      cursor: default
+    }
+
+    .hday.in {
+      background: var(--blue-bg);
+      color: var(--blue)
+    }
+
+    .hday.out {
+      background: var(--surface);
+      color: var(--text-tertiary)
+    }
+
+    .modal-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px
+    }
+
+    .modal-row:last-child {
+      border: none
+    }
+
+    .modal-key {
+      color: var(--text-secondary)
+    }
+
+    .modal-val {
+      font-weight: 600
+    }
+
+    /* ── REFRESH COUNTDOWN ── */
+    #countdown {
+      font-size: 12px;
+      color: var(--text-tertiary)
+    }
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:768px) {
+      main {
+        padding: 16px
+      }
+
+      .name-txt,
+      .mkt-badge {
+        display: none
+      }
+
+      td.hm,
+      th.hm {
+        display: none
+      }
+
+      .prog-track {
+        width: 80px
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">
+      <div class="nav-logo-icon">📊</div>
+      <div>
+        <div>RegSHO Monitor</div>
+        <div class="nav-sub">NASDAQ Threshold — 13일 강제청산 기한 추적</div>
+      </div>
+    </div>
+    <div class="nav-right">
+      <div class="status-pill"><span class="live-dot" id="live-dot"></span><span id="status-txt">연결 중…</span></div>
+      <span id="countdown"></span>
+      <button class="btn btn-ghost btn-sm" onclick="manualRefresh()" id="btn-rf">↻ 새로고침</button>
+      <a class="btn btn-ghost btn-sm" href="/api/export/csv" target="_blank">⬇ CSV</a>
+    </div>
+  </nav>
+
+  <main>
+    <!-- Change Banners -->
+    <div class="change-strip" id="change-strip"></div>
+
+    <!-- Watchlist -->
+    <div id="wl-panel">
+      <div class="wl-hd">⭐ 워치리스트</div>
+      <div class="chip-row" id="wl-chips"></div>
+    </div>
+
+    <!-- KPI -->
+    <div class="kpi-grid">
+      <div class="kpi-card kd">
+        <div class="kpi-num" id="k-danger">—</div>
+        <div class="kpi-label">🔴 위험 · 11~13일</div>
+      </div>
+      <div class="kpi-card kw">
+        <div class="kpi-num" id="k-warn">—</div>
+        <div class="kpi-label">🟡 경고 · 8~10일</div>
+      </div>
+      <div class="kpi-card ks">
+        <div class="kpi-num" id="k-safe">—</div>
+        <div class="kpi-label">🟢 안전 · 1~7일</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-num" id="k-total">—</div>
+        <div class="kpi-label">전체 등재 종목</div>
+      </div>
+      <div class="kpi-card kb">
+        <div class="kpi-num" id="k-new">—</div>
+        <div class="kpi-label">오늘 신규 추가</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-num" id="k-removed">—</div>
+        <div class="kpi-label">오늘 제외</div>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="search-box">
+        <span style="color:var(--text-tertiary)">🔍</span>
+        <input type="search" id="search" placeholder="티커 / 회사명 검색" oninput="applyFilters()">
+      </div>
+      <div class="filter-tabs">
+        <button class="ftab fa" id="ft-all" onclick="setF('all')">전체</button>
+        <button class="ftab" id="ft-danger" onclick="setF('danger')">🔴 위험</button>
+        <button class="ftab" id="ft-warning" onclick="setF('warning')">🟡 경고</button>
+        <button class="ftab" id="ft-safe" onclick="setF('safe')">🟢 안전</button>
+        <button class="ftab" id="ft-new" onclick="setF('new')">🆕 오늘신규</button>
+        <button class="ftab" id="ft-wl" onclick="setF('wl')">⭐ 즐겨찾기</button>
+      </div>
+      <span id="result-info"></span>
+    </div>
+
+    <!-- Table -->
+    <div class="table-card">
+      <div id="loading">
+        <div class="spin"></div>
+        <p>NASDAQ 데이터 불러오는 중…<br><small>처음 실행 시 최대 2분 소요</small></p>
+      </div>
+      <div id="empty-state">조건에 맞는 종목이 없습니다.</div>
+      <table id="tbl" style="display:none">
+        <thead>
+          <tr>
+            <th onclick="sort('symbol')" id="th-sym">티커<span class="si"></span></th>
+            <th class="hm">회사명</th>
+            <th class="hm">거래소</th>
+            <th onclick="sort('streak')" id="th-stk" class="sd">연속 등재일<span class="si"></span></th>
+            <th onclick="sort('risk')" id="th-risk">위험도<span class="si"></span></th>
+            <th onclick="sort('first_date')">첫 등재일<span class="si"></span></th>
+            <th class="hm">이력(20일)</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- Detail Modal -->
+  <div class="modal-bg" id="modal" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head">
+        <span class="modal-title" id="modal-title"></span>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+
+  <script>
+    // ── State ──
+    let allData = [], filt = 'all', sKey = 'streak', sDir = -1;
+    let watchlist = new Set(JSON.parse(localStorage.getItem('rsh_wl') || '[]'));
+    let countdown = 300, countdownTimer;
+
+    // ── Risk sort value ──
+    const riskOrd = { danger: 3, warning: 2, safe: 1 };
+    const riskKo = { danger: '위험', warning: '경고', safe: '안전' };
+
+    // ── Load ──
+    async function load() {
+      try {
+        const r = await fetch('/api/data'); if (!r.ok) throw 0;
+        const d = await r.json(); if (d.error) { setStatus(d.error, false); return; }
+        render(d);
+      } catch { setStatus('서버 연결 실패 — 재시도 중…', false); setTimeout(load, 8000); }
+    }
+
+    async function manualRefresh() {
+      const b = document.getElementById('btn-rf');
+      b.textContent = '⏳ 업데이트 중…'; b.disabled = true;
+      await fetch('/api/refresh', { method: 'POST' });
+      await new Promise(r => setTimeout(r, 5000));
+      await load();
+      b.textContent = '↻ 새로고침'; b.disabled = false; countdown = 300;
+    }
+
+    // ── Render ──
+    function render(d) {
+      allData = d.securities || [];
+      const s = d.summary || {};
+      document.getElementById('k-danger').textContent = s.danger ?? 0;
+      document.getElementById('k-warn').textContent = s.warning ?? 0;
+      document.getElementById('k-safe').textContent = s.safe ?? 0;
+      document.getElementById('k-total').textContent = s.total ?? 0;
+      document.getElementById('k-new').textContent = s.new_today ?? 0;
+      document.getElementById('k-removed').textContent = s.removed_today ?? 0;
+      setStatus(`기준일 ${d.ref_date} · ${d.last_updated}`, true);
+      renderBanners(d);
+      renderWL();
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('tbl').style.display = 'table';
+      applyFilters();
+    }
+
+    function renderBanners(d) {
+      const el = document.getElementById('change-strip');
+      el.innerHTML = '';
+      const added = d.added_today || [], removed = d.removed_today || [];
+      if (added.length) {
+        el.innerHTML += `<div class="change-card new-card">
+      <span class="change-icon">🆕</span>
+      <div><div class="change-title">오늘 신규 등재 <small>${added.length}종목 — 처음으로 Reg SHO 리스트 진입</small></div>
+      <div class="chip-row">${added.map(s => `<span class="chip chip-new" onclick="highlight('${s}')">${s}</span>`).join('')}</div></div></div>`;
+      }
+      if (removed.length) {
+        el.innerHTML += `<div class="change-card del-card">
+      <span class="change-icon">✅</span>
+      <div><div class="change-title">오늘 리스트 제외 <small>${removed.length}종목 — 강제청산 해소 / 미달</small></div>
+      <div class="chip-row">${removed.map(r => `<span class="chip chip-del" title="${r.name} (${r.streak_at_removal}일 후 제외)">${r.symbol} <span style="opacity:.6">${r.streak_at_removal}일</span></span>`).join('')}</div></div></div>`;
+      }
+      if (!added.length && !removed.length) {
+        el.innerHTML = `<div class="change-card"><span class="change-icon">📋</span>
+      <div><div class="change-title" style="color:var(--text-secondary)">오늘 변동 없음 — 전일 대비 신규 추가/제외 종목 없음</div></div></div>`;
+      }
+    }
+
+    // ── Filter ──
+    function setF(f) {
+      filt = f;
+      document.querySelectorAll('.ftab').forEach(b => b.className = 'ftab');
+      const cls = { all: 'fa', danger: 'fd', warning: 'fw', safe: 'fs', new: 'fs', wl: 'fb' };
+      document.getElementById('ft-' + f)?.classList.add(cls[f] || 'fa');
+      applyFilters();
+    }
+
+    function applyFilters() {
+      const q = document.getElementById('search').value.toLowerCase().trim();
+      let rows = [...allData];
+      if (filt === 'danger') rows = rows.filter(s => s.risk === 'danger');
+      if (filt === 'warning') rows = rows.filter(s => s.risk === 'warning');
+      if (filt === 'safe') rows = rows.filter(s => s.risk === 'safe');
+      if (filt === 'new') rows = rows.filter(s => s.is_new);
+      if (filt === 'wl') rows = rows.filter(s => watchlist.has(s.symbol));
+      if (q) rows = rows.filter(s => s.symbol.toLowerCase().includes(q) || s.name.toLowerCase().includes(q));
+      rows = [...rows].sort((a, b) => {
+        let av = sKey === 'risk' ? riskOrd[a.risk] || 0 : a[sKey];
+        let bv = sKey === 'risk' ? riskOrd[b.risk] || 0 : b[sKey];
+        return typeof av === 'string' ? sDir * av.localeCompare(bv) : sDir * (av - bv);
+      });
+      buildRows(rows);
+      document.getElementById('result-info').textContent = rows.length + '개 표시';
+      document.getElementById('empty-state').style.display = rows.length ? 'none' : 'block';
+    }
+
+    function buildRows(rows) {
+      const tb = document.getElementById('tbody');
+      tb.innerHTML = '';
+      rows.forEach(s => {
+        const onW = watchlist.has(s.symbol);
+        const spark = (s.history_flags || []).slice(0, 20).reverse().map(h => `<div class="sp ${h.in ? 'sp-in' : 'sp-out'}" title="${h.date}"></div>`).join('');
+        const rmLbl = s.days_remaining > 0 ? `⏰ ${s.days_remaining}일 남음` : '🚨 기한 초과!';
+        const mktS = { 'Global Select': 'GS', 'Capital Market': 'CM', 'Global Market': 'GM' }[s.market_label] || s.market;
+        const r3 = s.rule3210 === 'Y' ? `<span class="r3210-tag" title="Rule 3210 위반">R3210</span>` : '';
+        const tr = document.createElement('tr');
+        tr.className = `row-${s.risk}${s.is_new ? ' is-new' : ''}`;
+        tr.id = `row-${s.symbol}`;
+        tr.innerHTML = `
+      <td><div class="sym-wrap">
+        <button class="star-btn ${onW ? 'on' : ''}" onclick="toggleWL('${s.symbol}',this)">⭐</button>
+        <div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span class="sym" onclick="openModal('${s.symbol}')" style="cursor:pointer">${s.symbol}</span>
+            ${s.is_new ? '<span class="new-tag">NEW</span>' : ''}${r3}
+          </div>
+        </div>
+      </div></td>
+      <td class="hm"><span class="name-txt" title="${s.name}">${s.name || '—'}</span></td>
+      <td class="hm"><span class="mkt-badge">${mktS}</span></td>
+      <td>
+        <div class="streak-val">${s.streak}</div>
+        <div class="streak-sub">/ 13일</div>
+        <div class="prog-track"><div class="prog-fill" style="width:${s.pct}%"></div></div>
+        <div class="remain-lbl">${rmLbl}</div>
+      </td>
+      <td><span class="risk-badge rb-${s.risk}">${s.risk === 'danger' ? '🔴' : s.risk === 'warning' ? '🟡' : '🟢'} ${riskKo[s.risk]}</span></td>
+      <td><span class="date-txt">${s.first_date}</span></td>
+      <td class="hm"><div class="spark">${spark}</div></td>`;
+        tb.appendChild(tr);
+      });
+    }
+
+    // ── Sort ──
+    function sort(key) {
+      if (sKey === key) sDir *= -1; else { sKey = key; sDir = -1; }
+      document.querySelectorAll('thead th').forEach(t => { t.classList.remove('sa', 'sd'); });
+      const idMap = { symbol: 'th-sym', streak: 'th-stk', risk: 'th-risk' };
+      if (idMap[key]) { document.getElementById(idMap[key]).classList.add(sDir > 0 ? 'sa' : 'sd'); }
+      applyFilters();
+    }
+
+    // ── Watchlist ──
+    function toggleWL(sym, btn) {
+      if (watchlist.has(sym)) { watchlist.delete(sym); btn.classList.remove('on'); }
+      else { watchlist.add(sym); btn.classList.add('on'); }
+      localStorage.setItem('rsh_wl', JSON.stringify([...watchlist]));
+      renderWL();
+    }
+
+    function renderWL() {
+      const p = document.getElementById('wl-panel'), c = document.getElementById('wl-chips');
+      if (!watchlist.size) { p.style.display = 'none'; return; }
+      p.style.display = 'block';
+      c.innerHTML = [...watchlist].map(sym => {
+        const it = allData.find(s => s.symbol === sym);
+        const cls = it ? `chip-${it.risk === 'danger' ? 'del' : it.risk === 'warning' ? 'del' : 'new'}` : 'chip-del';
+        return `<span class="chip ${cls}" onclick="highlight('${sym}')">${sym}</span>`;
+      }).join('');
+    }
+
+    function highlight(sym) {
+      const el = document.getElementById('row-' + sym);
+      if (!el) { setF('all'); setTimeout(() => highlight(sym), 200); return; }
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.style.outline = '2px solid var(--blue)'; el.style.borderRadius = '4px';
+      setTimeout(() => el.style.outline = '', 2000);
+    }
+
+    // ── Modal ──
+    async function openModal(sym) {
+      const item = allData.find(s => s.symbol === sym);
+      if (!item) return;
+      document.getElementById('modal-title').textContent = `${sym} — ${item.name}`;
+      document.getElementById('modal').classList.add('open');
+      const hdays = (item.history_flags || []).slice(0, 30).reverse().map(h => `
+    <div class="hday ${h.in ? 'in' : 'out'}" title="${h.date}">${h.date.slice(5, 7)}/${h.date.slice(6, 8)}</div>`).join('');
+      document.getElementById('modal-body').innerHTML = `
+    <div class="modal-row"><span class="modal-key">거래소</span><span class="modal-val">${item.market_label}</span></div>
+    <div class="modal-row"><span class="modal-key">연속 등재일</span><span class="modal-val" style="color:var(--${item.risk === 'safe' ? 'safe' : item.risk === 'warning' ? 'warning' : 'danger'})">${item.streak}일 / 13일</span></div>
+    <div class="modal-row"><span class="modal-key">남은 일수</span><span class="modal-val">${item.days_remaining > 0 ? item.days_remaining + '일' : '🚨 기한 초과'}</span></div>
+    <div class="modal-row"><span class="modal-key">위험도</span><span class="modal-val">${riskKo[item.risk]}</span></div>
+    <div class="modal-row"><span class="modal-key">첫 등재일</span><span class="modal-val">${item.first_date}</span></div>
+    <div class="modal-row"><span class="modal-key">Rule 3210</span><span class="modal-val">${item.rule3210 === 'Y' ? '⚠️ 해당' : '해당 없음'}</span></div>
+    <div style="margin-top:16px"><div style="font-size:12px;font-weight:700;color:var(--text-secondary);margin-bottom:10px">최근 30거래일 등재 이력</div>
+    <div class="history-grid">${hdays}</div></div>`;
+    }
+    function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+    // ── Status ──
+    function setStatus(msg, ok) {
+      document.getElementById('status-txt').textContent = msg;
+      document.getElementById('live-dot').style.background = ok ? 'var(--safe)' : 'var(--danger)';
+    }
+
+    // ── Countdown ──
+    function startCountdown() {
+      const el = document.getElementById('countdown');
+      countdownTimer = setInterval(async () => {
+        countdown--;
+        const m = Math.floor(countdown / 60), s = countdown % 60;
+        el.textContent = `${m}:${String(s).padStart(2, '0')} 후 자동 갱신`;
+        if (countdown <= 0) { countdown = 300; await load(); }
+      }, 1000);
+    }
+
+    // ── Init ──
+    load();
+    startCountdown();
+  </script>
+</body>
+
+</html>
