@@ -4,6 +4,9 @@ NASDAQ Reg SHO Threshold List tracker. Tracks how many consecutive settlement da
 
 Built with Python + Flask.
 
+<img width="1914" height="666" alt="image" src="https://github.com/user-attachments/assets/08d19404-023f-4891-a73f-5dc6bc572bb3" />
+
+
 ## Why
 
 SEC Rule 203(b)(3) — if a security stays on the threshold list for 13 consecutive settlement days, broker-dealers must close out all open fail-to-deliver positions. Missing that deadline is not optional.
