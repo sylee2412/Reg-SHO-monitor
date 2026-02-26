@@ -4,7 +4,7 @@ NASDAQ Reg SHO Threshold List tracker. Tracks how many consecutive settlement da
 
 Built with Python + Flask.
 
-<img width="1914" height="666" alt="image" src="https://github.com/user-attachments/assets/08d19404-023f-4891-a73f-5dc6bc572bb3" />
+<img width="1859" height="564" alt="image" src="https://github.com/user-attachments/assets/76a7e08c-62bd-4602-a660-575517934190" />
 
 
 ## Why
