@@ -15,6 +15,7 @@ import threading
 import time
 import io
 import csv
+import re
 from datetime import datetime, timedelta, date
 from zoneinfo import ZoneInfo
 
@@ -31,6 +32,19 @@ MAX_LOOKBACK_CAL   = 120   # 최대 120 캘린더일 검색
 MAX_STREAK_DAYS    = 60    # streak 계산 최대 거래일
 CLOSEOUT_DAYS      = 13    # Reg SHO Rule 203(b)(3) 강제청산 기준
 ET_ZONE         = ZoneInfo("America/New_York")
+
+# 특정 상품(ETF, ETN, 워런트 등) 제외 키워드 (단어 단위 매칭)
+EXCLUDE_KEYWORDS = {
+    "ETF", "ETN", "FUND", "FUNDS", "TRUST", "WARRANT", "WARRANTS",
+    "RIGHT", "RIGHTS", "UNIT", "UNITS", "ACQUISITION", "SPAC"
+}
+
+# 펀드 운용사/ETF 특징적인 부분 문자열 매칭 (해당 단어가 포함되면 모두 제외)
+EXCLUDE_SUBSTRINGS = [
+    "TIDAL", "DEFIANCE", "YIELDMAX", "PROSHARES", "DIREXION", 
+    "ISHARES", "INVESCO", "VANGUARD", "SPDR", "WISDOMTREE", 
+    "GLOBAL X", "DAILY", "BULL", "BEAR", "TARG"
+]
 
 # ─── Flask 앱 ─────────────────────────────────────────────────────
 app = Flask(__name__)
@@ -61,8 +75,21 @@ def parse_regsho_file(text: str) -> dict:
         sym = parts[0].strip()
         if not sym or sym[:8].isdigit():          # 타임스탬프 행 스킵
             continue
+            
+        name = parts[1].strip() if len(parts) > 1 else ""
+        name_upper = name.upper()
+        
+        # 1차 검사: 부분 문자열 일치 (운용사 이름 등)
+        if any(sub in name_upper for sub in EXCLUDE_SUBSTRINGS):
+            continue
+        
+        # 2차 검사: 단어 단위 일치 (이름에서 영문/숫자 단어만 추출)
+        tokens = set(re.findall(r'[A-Z0-9]+', name_upper))
+        if tokens & EXCLUDE_KEYWORDS:
+            continue
+
         result[sym] = {
-            "name":    parts[1].strip() if len(parts) > 1 else "",
+            "name":    name,
             "market":  parts[2].strip() if len(parts) > 2 else "",
             "rule3210": parts[4].strip() if len(parts) > 4 else "N",
         }

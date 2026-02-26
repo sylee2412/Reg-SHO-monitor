@@ -34,6 +34,19 @@ python app.py
 
 Opens at `http://localhost:5000`. First run downloads ~60 trading days of historical data (takes 1-2 min), then uses local cache.
 
+## Filtering Unwanted Tickers (ETFs, etc.)
+
+If you want to exclude specific types of securities (like certain ETFs or funds) from the analysis, simply add keywords or issuer names to the `EXCLUDE_SUBSTRINGS` list in `app.py`. Any ticker whose name contains these substrings will be completely omitted from the dashboard.
+
+```python
+# app.py
+EXCLUDE_SUBSTRINGS = [
+    "TIDAL", "DEFIANCE", "YIELDMAX",
+    # Add your exclusions here!
+    # "NEW_FUND_NAME", "ETC"
+]
+```
+
 ## Project Structure
 
 ```
