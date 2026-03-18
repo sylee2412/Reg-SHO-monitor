@@ -1,14 +1,3 @@
-"""
-Reg SHO Threshold Security Monitor
-====================================
-Flask 서버 + APScheduler로 24/7 운영
-- NASDAQ에서 매일 데이터 자동 다운로드
-- 연속 등재일(streak) 계산
-- 신규 추가/제외 종목 감지
-- Rule 3210 위반 여부 추적
-- CSV 내보내기, 워치리스트 지원
-"""
-
 import json
 import os
 import threading
@@ -23,23 +12,20 @@ import requests
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask, jsonify, render_template, Response
 
-# ─── 상수 ──────────────────────────────────────────────────────────
 BASE_URL        = "http://www.nasdaqtrader.com/dynamic/symdir/regsho/nasdaqth{date}.txt"
 DATA_DIR        = os.path.join(os.path.dirname(__file__), "data")
 CACHE_FILE      = os.path.join(DATA_DIR, "cache.json")
 HISTORY_FILE    = os.path.join(DATA_DIR, "history.json")
-MAX_LOOKBACK_CAL   = 120   # 최대 120 캘린더일 검색
-MAX_STREAK_DAYS    = 60    # streak 계산 최대 거래일
-CLOSEOUT_DAYS      = 13    # Reg SHO Rule 203(b)(3) 강제청산 기준
+MAX_LOOKBACK_CAL   = 120 
+MAX_STREAK_DAYS    = 60  
+CLOSEOUT_DAYS      = 13    
 ET_ZONE         = ZoneInfo("America/New_York")
 
-# 특정 상품(ETF, ETN, 워런트 등) 제외 키워드 (단어 단위 매칭)
 EXCLUDE_KEYWORDS = {
     "ETF", "ETN", "FUND", "FUNDS", "TRUST", "WARRANT", "WARRANTS",
     "RIGHT", "RIGHTS", "UNIT", "UNITS", "ACQUISITION", "SPAC"
 }
 
-# 펀드 운용사/ETF 특징적인 부분 문자열 매칭 (해당 단어가 포함되면 모두 제외)
 EXCLUDE_SUBSTRINGS = [
     "TIDAL", "DEFIANCE", "YIELDMAX", "PROSHARES", "DIREXION", 
     "ISHARES", "INVESCO", "VANGUARD", "SPDR", "WISDOMTREE", 
@@ -68,22 +54,21 @@ def save_json(path: str, data) -> None:
 def parse_regsho_file(text: str) -> dict:
     """파이프 구분 Reg SHO 파일 → {symbol: {name,market,rule3210}} 딕셔너리"""
     result = {}
-    for line in text.strip().splitlines()[1:]:   # 헤더 스킵
+    for line in text.strip().splitlines()[1:]:   
         parts = line.split("|")
         if len(parts) < 4:
             continue
         sym = parts[0].strip()
-        if not sym or sym[:8].isdigit():          # 타임스탬프 행 스킵
+        if not sym or sym[:8].isdigit():  
             continue
             
         name = parts[1].strip() if len(parts) > 1 else ""
         name_upper = name.upper()
         
-        # 1차 검사: 부분 문자열 일치 (운용사 이름 등)
+
         if any(sub in name_upper for sub in EXCLUDE_SUBSTRINGS):
             continue
         
-        # 2차 검사: 단어 단위 일치 (이름에서 영문/숫자 단어만 추출)
         tokens = set(re.findall(r'[A-Z0-9]+', name_upper))
         if tokens & EXCLUDE_KEYWORDS:
             continue
@@ -104,7 +89,7 @@ MARKET_LABELS = {
 def market_label(code: str) -> str:
     return MARKET_LABELS.get(code, code)
 
-# ─── 거래일 목록 ──────────────────────────────────────────────────
+
 def prev_trading_days(start: date, n: int) -> list:
     """start 날짜부터 과거 n 거래일(평일) 리스트 반환"""
     days, cur, checked = [], start, 0
@@ -115,14 +100,14 @@ def prev_trading_days(start: date, n: int) -> list:
         checked += 1
     return days
 
-# ─── 데이터 수집 ──────────────────────────────────────────────────
+
 def fetch_day(d: date) -> dict | None:
     url = BASE_URL.format(date=d.strftime("%Y%m%d"))
     try:
         r = requests.get(url, timeout=15)
         if r.status_code == 200 and "|" in r.text:
             parsed = parse_regsho_file(r.text)
-            return parsed if parsed else None   # 빈 파일(미게시) → None
+            return parsed if parsed else None   
     except Exception:
         pass
     return None
@@ -178,12 +163,12 @@ def analyze(history: dict) -> dict:
     added_today   = sorted(today_syms - prev_syms)
     removed_today = sorted(prev_syms  - today_syms)
 
-    # ── streak 계산 ─────────────────────────────────────────────
+
     securities = []
     for sym, info in today_data.items():
         streak        = 0
         hist_flags    = []
-        max_streak    = 0   # 현재 streak 중 최장
+        max_streak    = 0  
 
         for dk in valid_dates[:MAX_STREAK_DAYS]:
             present = sym in history.get(dk, {})
@@ -224,7 +209,7 @@ def analyze(history: dict) -> dict:
 
     securities.sort(key=lambda x: (-x["streak"], x["symbol"]))
 
-    # ── 제거 종목 상세 ──────────────────────────────────────────
+
     removed_detail = []
     for sym in removed_today:
         info   = prev_data.get(sym, {})
@@ -276,7 +261,7 @@ def rebuild_cache():
     else:
         print("[rebuild] 분석 실패 (데이터 없음)")
 
-# ─── Flask 라우트 ─────────────────────────────────────────────────
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -320,7 +305,7 @@ def export_csv():
     return Response(output.getvalue(), mimetype="text/csv",
                     headers={"Content-Disposition": f"attachment; filename={fname}"})
 
-# ─── 스케줄러 ─────────────────────────────────────────────────────
+
 def start_scheduler():
     sched = BackgroundScheduler(timezone=ET_ZONE)
     # NASDAQ은 통상 미동부 오후 10시~11시 사이 파일 게시
@@ -331,7 +316,7 @@ def start_scheduler():
     print("[scheduler] 등록: 매일 07:00, 22:30 ET")
     return sched
 
-# ─── 진입점 ──────────────────────────────────────────────────────
+
 if __name__ == "__main__":
     print("=" * 58)
     print("  Reg SHO Threshold Monitor  |  http://localhost:5000")
